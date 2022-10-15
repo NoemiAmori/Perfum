@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { RNCamera } from 'react-native-camera';
+
+import ItemPerfume from '../Components/ItemPerfume';
 
 import Database from '../Database/Database';
 import Perfume from '../Models/Perfume';
@@ -9,12 +11,11 @@ export default class Cadastro extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        nome: 'EM BRANCO',
-        descrição: 'EM BRANCO',
-        Preço: 0,
-        imagem: ''
+      nome: '*****',
+      descrição: '*****',
+      preco: 0,
+      imagem: ''
     }
-    //this.CadastrarBanco('Batmóvel', 'HotWheels', 2005, 'https://cf.shopee.com.br/file/dd9bfd306cbaa926a7b23f6d568cd103')
   }
 
   CadastrarBanco = (nome, descricao, preco, imagem) => {
@@ -23,27 +24,129 @@ export default class Cadastro extends Component {
     banco.Inserir(perfume);
   }
 
+  takePicture = async () => {
+    if (this.camera) {
+      const options = { quality: 0.5, base64: true };
+      const data = await this.camera.takePictureAsync(options);
+      console.log(data.uri);
+      this.setState({imagem: data.uri})
+    }
+  };
+
   render() {
-    return(
-      <View>
-        <TextInput onChangeText={ (valor) => {this.setState({nome: valor})}} placeholder='Digite o nome...' />
-        <TextInput onChangeText={ (valor) => {this.setState({descricao: valor})}} placeholder='Digite a descrição...' />
-        <TextInput onChangeText={ (valor) => {this.setState({preco: valor})}}placeholder='Digite o preço...' />
-
-        <View style={{alignItems: 'center', justifyContent: 'center'}}>
-            <TouchableOpacity onPress={() => this.CadastrarBanco(this.state.nome, this.state.descricao, this.state.preco, this.state.imagem)}>
-                <Text style={{ backgroundColor: 'purple', width: 150, textAlign: 'center',padding: 10, margin: 5, color: 'white', borderRadius: 50 }}>Cadastrar</Text>
-            </TouchableOpacity>
-            <Text></Text>
+    return (
+      <ScrollView style={styles.form}>
+        <View style={{ flex: 1 }}>
+          <TextInput style={styles.txtOpcoes} onChangeText={(valor) => { this.setState({ nome: valor }) }} placeholder='Digite o nome...' />
+          <TextInput style={styles.txtOpcoes} onChangeText={(valor) => { this.setState({ descricao: valor }) }} placeholder='Digite a descrição...' />
+          <TextInput style={styles.txtOpcoes} onChangeText={(valor) => { this.setState({ preco: valor }) }} placeholder='Digite o preço...' />
         </View>
 
-        <View>
-            <Text>O perfume será cadastrado com os seguintes dados:</Text>
-            <Text>Nome: {this.state.modelo}</Text>
-            <Text>Descrição: {this.state.marca}</Text>
-            <Text>Preço: {this.state.ano}</Text>
+        <View style={styles.container}>
+          <RNCamera
+            ref={ref => {
+              this.camera = ref;
+            }}
+            style={styles.preview}
+            type={RNCamera.Constants.Type.back}
+            flashMode={RNCamera.Constants.FlashMode.on}
+            androidCameraPermissionOptions={{
+              title: 'Permission to use camera',
+              message: 'We need your permission to use your camera',
+              buttonPositive: 'Ok',
+              buttonNegative: 'Cancel',
+            }}
+            androidRecordAudioPermissionOptions={{
+              title: 'Permission to use audio recording',
+              message: 'We need your permission to use your audio',
+              buttonPositive: 'Ok',
+              buttonNegative: 'Cancel',
+            }}
+            onGoogleVisionBarcodesDetected={({ barcodes }) => {
+              console.log(barcodes);
+            }}
+          />
         </View>
-      </View>
-    )    
+
+        <View style={styles.botao}>
+          <TouchableOpacity onPress={this.takePicture.bind(this)}>
+            <Text style={{ fontSize: 14 }}> Tirar Foto </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => this.CadastrarBanco(this.state.nome, this.state.descricao, this.state.preco, this.state.imagem)}>
+            <Text style={styles.cadastro}>CADASTRAR</Text>
+          </TouchableOpacity>
+        </View >
+
+        <View style={{ flex: 1 }}>
+          <Text style={{ textAlign: 'center' }}>O perfume será cadastrado com as seguintes informações: </Text>
+          <ItemPerfume
+            nome={this.state.nome}
+            descricao={this.state.descricao}
+            preco={this.state.preco}
+            imagem={this.state.imagem}
+          />
+
+
+        </View>
+      </ScrollView >
+    )
   }
 }
+
+const styles = StyleSheet.create({
+  form: {
+    flex: 1,
+    paddingHorizontal: 10,
+    backgroundColor: '#cbf0c9'
+
+  },
+  txtOpcoes: {
+    color: 'black',
+    fontWeight:'bold',
+    justifyContent: 'center',
+    margin: 5,
+    borderRadius: 30,
+    backgroundColor: '#f5ebeb'
+  },
+  cadastro: {
+    backgroundColor: '#28bf76',
+    textAlign: 'center',
+    borderRadius: 50,
+    width: 150,
+    padding: 10,
+    margin: 5,
+    color: 'black',
+    fontWeight: 'bold'
+  },
+  botao: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    flex: 1,
+    marginTop: 100
+  },
+
+  container: {
+    marginTop: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    height: 50,
+  },
+  preview: {
+    width: 200,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  capture: {
+    flex: 0,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 15,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+    margin: 20,
+  },
+})

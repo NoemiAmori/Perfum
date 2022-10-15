@@ -6,10 +6,9 @@ export default function Home({ navigation }) {
     return (
         <View>
             <Text>Olá, mundo!</Text>
-
-            <Button title="Sobre" onPress={() => navigation.navigate('Sobre')} />
             <Button title="Cadastro" onPress={() => navigation.navigate('Cadastro')} />
-
+            <Button title="Listagem" onPress={() => navigation.navigate('Listagem')} />
+            <Button title="Sobre" onPress={() => navigation.navigate('Sobre')} />
         </View>
     )
 
